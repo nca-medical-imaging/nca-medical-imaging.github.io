@@ -1,0 +1,1994 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Neural Cellular Automata for Medical Imaging - MICCAI Tutorial</title>
+  <meta name="description" content="MICCAI tutorial website: Learning to Self-Organize: Neural Cellular Automata for Medical Imaging.">
+  <link rel="icon" type="image/png" href="logo.png">
+  <link rel="shortcut icon" href="logo.png">
+  <style>
+    :root {
+      --bg: #edf2f7;
+      --paper: #ffffff;
+      --ink: #101826;
+      --muted: #4f5c6a;
+      --line: #cfd8e2;
+      --line-strong: #a6b5c6;
+      --accent: #2f6df6;
+      --accent-soft: #e8eefc;
+      --teal: #6f4cf4;
+      --teal-soft: #f0edff;
+      --maxw: 1480px;
+      --sidebar-w: 180px;
+      --radius-lg: 0;
+      --radius-md: 0;
+      --radius-sm: 0;
+      --shadow-lg: none;
+      --shadow-sm: none;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: "Avenir Next", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.55;
+      background:
+        linear-gradient(180deg, #f8faff 0%, #eff4ff 46%, #edf2fb 100%),
+        radial-gradient(1200px 540px at 4% -6%, rgba(111, 76, 244, 0.1), transparent 62%),
+        radial-gradient(1000px 560px at 100% -8%, rgba(47, 109, 246, 0.13), transparent 62%),
+        var(--bg);
+    }
+
+    #ca-bg {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: -1;
+      opacity: 0.34;
+    }
+
+    h1,
+    h2,
+    h3 {
+      font-family: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", serif;
+      letter-spacing: -0.01em;
+      line-height: 1.15;
+      margin: 0;
+    }
+
+    p {
+      margin: 0 0 1rem;
+      color: var(--muted);
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .site-nav {
+      position: fixed;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: var(--sidebar-w);
+      z-index: 20;
+      border-right: 1px solid #c5d0dc;
+      background: linear-gradient(180deg, rgba(243, 247, 252, 0.95), rgba(236, 242, 248, 0.9));
+      backdrop-filter: blur(10px);
+    }
+
+    .nav-inner {
+      height: 100%;
+      margin: 0;
+      padding: 1rem 0.45rem;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.8rem;
+    }
+
+    .brand {
+      font-size: 0.84rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-weight: 800;
+      color: #24313c;
+      white-space: nowrap;
+      line-height: 1.1;
+      max-width: none;
+    }
+
+    .preview-deck {
+      position: relative;
+      --preview-content-w: min(100%, 280px);
+      min-height: 560px;
+      border: none;
+      border-radius: 0;
+      background: transparent;
+      padding: 0.82rem 0.78rem 0.78rem;
+      overflow: hidden;
+    }
+
+    .preview-deck::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0.65rem;
+      bottom: 0.65rem;
+      width: 2px;
+      border-radius: 999px;
+      background: linear-gradient(
+        180deg,
+        rgba(154, 170, 206, 0.2) 0%,
+        rgba(139, 157, 197, 0.4) 50%,
+        rgba(154, 170, 206, 0.2) 100%
+      );
+      clip-path: polygon(42% 0, 58% 0, 100% 50%, 58% 100%, 42% 100%, 0 50%);
+      pointer-events: none;
+    }
+
+    .preview-card {
+      position: absolute;
+      inset: 3.2rem 0.78rem 0.78rem 0.78rem;
+      opacity: 0;
+      transform: translateY(10px) scale(0.985);
+      pointer-events: none;
+      transition: opacity 420ms ease, transform 420ms ease;
+      display: grid;
+      grid-template-rows: auto auto 1fr auto;
+      gap: 0.5rem;
+      justify-items: start;
+    }
+
+    .preview-card.active {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+    }
+
+    .preview-title {
+      font-size: 0.98rem;
+      color: #26384f;
+      margin: 0;
+      letter-spacing: 0;
+      line-height: 1.18;
+      width: var(--preview-content-w);
+    }
+
+    .preview-media {
+      width: var(--preview-content-w);
+      aspect-ratio: 3 / 4;
+      margin: 0;
+      border: none;
+      border-radius: 12px;
+      background: transparent;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .preview-media canvas,
+    .preview-media img,
+    .preview-media video {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+      border: none;
+      outline: none;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .preview-copy {
+      margin: 0;
+      font-size: 0.75rem;
+      line-height: 1.4;
+      color: #4f617b;
+      width: var(--preview-content-w);
+    }
+
+    .preview-progress-row {
+      width: var(--preview-content-w);
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.38rem;
+      cursor: pointer;
+    }
+
+    .preview-progress {
+      width: auto;
+      flex: 1 1 auto;
+      margin: 0;
+      height: 5px;
+      border-radius: 999px;
+      background: rgba(157, 175, 205, 0.34);
+      overflow: hidden;
+    }
+
+    .preview-progress > span {
+      display: block;
+      width: 0;
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #2f6df6 0%, #5876f6 48%, #6f4cf4 100%);
+      transition: width linear;
+    }
+
+    .preview-state {
+      width: 16px;
+      height: 16px;
+      position: relative;
+      color: #7186a1;
+      opacity: 0.88;
+      flex: 0 0 auto;
+    }
+
+    .preview-state::before,
+    .preview-state::after {
+      content: "";
+      position: absolute;
+    }
+
+    .preview-state.playing::before {
+      left: 4px;
+      top: 3px;
+      width: 0;
+      height: 0;
+      border-top: 5px solid transparent;
+      border-bottom: 5px solid transparent;
+      border-left: 7px solid currentColor;
+    }
+
+    .preview-state.paused::before {
+      left: 3px;
+      top: 3px;
+      width: 3px;
+      height: 10px;
+      background: currentColor;
+      border-radius: 1px;
+    }
+
+    .preview-state.paused::after {
+      right: 3px;
+      top: 3px;
+      width: 3px;
+      height: 10px;
+      background: currentColor;
+      border-radius: 1px;
+    }
+
+    .preview-switch {
+      position: absolute;
+      top: 0.62rem;
+      left: 0.78rem;
+      width: var(--preview-content-w);
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.16rem;
+      z-index: 4;
+      border-bottom: 1px solid #d4deea;
+      padding-bottom: 0.24rem;
+    }
+
+    .preview-switch button {
+      appearance: none;
+      border: 0;
+      background: transparent;
+      border-radius: 0;
+      color: #6d7f95;
+      font-size: 0.6rem;
+      font-weight: 700;
+      line-height: 1.2;
+      text-align: center;
+      padding: 0.18rem 0.2rem 0.24rem;
+      cursor: pointer;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      transition: color 200ms ease;
+      position: relative;
+    }
+
+    .preview-switch button::after {
+      content: "";
+      position: absolute;
+      left: 15%;
+      right: 15%;
+      bottom: 0;
+      height: 2px;
+      background: linear-gradient(90deg, #2f6df6 0%, #6f4cf4 100%);
+      opacity: 0;
+      transition: opacity 200ms ease;
+    }
+
+    .preview-switch button.active {
+      color: #2a4162;
+    }
+
+    .preview-switch button:hover,
+    .preview-switch button:focus-visible {
+      color: #4b627f;
+      outline: none;
+    }
+
+    .preview-switch button.active::after {
+      opacity: 1;
+    }
+
+    .contact-title {
+      font-size: 0.68rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #5d6f82;
+      font-weight: 800;
+      margin-bottom: 0.32rem;
+    }
+
+    .contact-line {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.84rem;
+      color: #24384f;
+      line-height: 1.3;
+      margin-bottom: 0.2rem;
+    }
+
+    .contact-line .cicon {
+      width: 14px;
+      height: 14px;
+      color: #6d7f93;
+      flex: 0 0 auto;
+    }
+
+    .contact-line .cicon svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.9;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .menu {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.35rem;
+      width: auto;
+      flex: 1 1 auto;
+      margin-bottom: 0.45rem;
+    }
+
+    .menu-row {
+      width: 100%;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.52rem;
+    }
+
+    .nav-logo {
+      width: 46px;
+      height: auto;
+      min-height: 118px;
+      object-fit: contain;
+      object-position: center left;
+      flex: 0 0 auto;
+      opacity: 0.96;
+      margin-top: 0;
+    }
+
+    .nav-main {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.38rem;
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .side-meta {
+      margin: 0 0 0.45rem;
+      max-width: none;
+      width: 100%;
+      padding-left: 0;
+      display: grid;
+      gap: 0.2rem;
+    }
+
+    .side-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      width: 100%;
+      margin-top: auto;
+      padding-left: 0.5rem;
+      padding-right: 0.5rem;
+    }
+
+    .side-contact {
+      margin: 0;
+      max-width: none;
+      width: 100%;
+      padding-top: 0.34rem;
+      border-top: 1px solid #d4deea;
+    }
+
+    .side-contact .contact-title {
+      margin-bottom: 0.22rem;
+    }
+
+    .side-contact .contact-line {
+      font-size: 0.74rem;
+      margin-bottom: 0.14rem;
+    }
+
+    .meta-line {
+      font-size: 0.68rem;
+      line-height: 1.32;
+      color: #4f637b;
+      margin-bottom: 0;
+    }
+
+    .meta-line .cicon {
+      width: 13px;
+      height: 13px;
+      color: #74879c;
+    }
+
+    .contact-note {
+      margin: 0 0 0.34rem;
+      font-size: 0.68rem;
+      line-height: 1.32;
+      color: #556980;
+      padding-left: 0;
+    }
+
+    .menu a {
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.84rem;
+      color: #263645;
+      border: 1px solid transparent;
+      border-radius: 0;
+      padding: 0.32rem 0.4rem;
+      transition: border-color 180ms ease, background-color 180ms ease;
+    }
+
+    .menu a:hover,
+    .menu a:focus-visible {
+      border-color: var(--line-strong);
+      background: #edf2f7;
+      outline: none;
+    }
+
+    .wrap {
+      max-width: var(--maxw);
+      margin-left: calc(var(--sidebar-w) + 0.9rem);
+      margin-right: auto;
+      padding: 1.2rem 0.52rem 3rem;
+    }
+
+    .hero {
+      position: relative;
+      overflow: visible;
+      background: transparent;
+      border: none;
+      border-radius: var(--radius-lg);
+      box-shadow: none;
+      padding: 1.2rem 0 1.6rem;
+      display: grid;
+      grid-template-columns: 2.35fr 0.85fr;
+      gap: 0.9rem;
+      isolation: isolate;
+      border-bottom: 1px solid #c9d5e2;
+    }
+
+    .hero-main {
+      min-width: 0;
+    }
+
+    .hero::before {
+      content: none;
+    }
+
+    .hero::after {
+      content: none;
+    }
+
+    .kicker {
+      margin-bottom: 0.7rem;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-weight: 800;
+      color: var(--accent);
+    }
+
+    .hero h1 {
+      font-size: clamp(2rem, 4.8vw, 3.45rem);
+      max-width: none;
+      margin-bottom: 0.72rem;
+      letter-spacing: -0.014em;
+    }
+
+    .title-gradient {
+      background: linear-gradient(90deg, #2f6df6 0%, #4e7df8 42%, #6f4cf4 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+    }
+
+    #title-scramble {
+      display: inline-block;
+      white-space: nowrap;
+      overflow: visible;
+      padding-bottom: 0.1em;
+    }
+
+    .scramble-letter {
+      display: inline-block;
+      line-height: 1.18;
+      padding-bottom: 0.14em;
+      margin-bottom: -0.14em;
+      overflow: visible;
+      transition:
+        transform 760ms cubic-bezier(0.2, 0.8, 0.2, 1),
+        opacity 560ms ease;
+      will-change: transform;
+      background-repeat: no-repeat;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-meta {
+      color: #3a4650;
+      font-size: 0.9rem;
+      margin-bottom: 0.88rem;
+      line-height: 1.45;
+    }
+
+    .hero-abstract {
+      max-width: none;
+      font-size: 1rem;
+      line-height: 1.58;
+      margin-bottom: 0.82rem;
+    }
+
+    .cta {
+      display: flex;
+      gap: 0.62rem;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+
+    .btn {
+      text-decoration: none;
+      font-weight: 800;
+      font-size: 0.9rem;
+      border-radius: 0;
+      border: 1px solid #9fb0c1;
+      padding: 0.56rem 0.95rem;
+      transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+      background: #fff;
+      color: #1d2a35;
+    }
+
+    .btn:hover,
+    .btn:focus-visible {
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-sm);
+      outline: none;
+    }
+
+    .btn.primary {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    .hero-side {
+      border: none;
+      padding: 0;
+      background: transparent;
+    }
+
+    .hero-side h2 {
+      display: none;
+    }
+
+    .glance-block {
+      margin-top: 0.42rem;
+      margin-bottom: 0.75rem;
+      border-left: none;
+      background: transparent;
+      padding: 0;
+    }
+
+    .facts-mini {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.48rem;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .facts-mini li {
+      flex: 1 1 210px;
+      border-left: 3px solid #aab4dc;
+      border-radius: 0;
+      background: linear-gradient(90deg, #ffffff 0%, #f7f9ff 100%);
+      padding: 0.5rem 0.58rem;
+      display: grid;
+      grid-template-columns: 20px 1fr;
+      gap: 0.44rem;
+      align-items: start;
+    }
+
+    .facts-mini .icon {
+      width: 18px;
+      height: 18px;
+      color: #3f566f;
+      margin-top: 0.06rem;
+    }
+
+    .facts-mini .icon svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .facts-mini .label {
+      display: block;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #51606f;
+      font-weight: 800;
+      margin-bottom: 0.1rem;
+    }
+
+    .facts-mini .value {
+      color: #243444;
+      font-weight: 600;
+      font-size: 0.9rem;
+      line-height: 1.35;
+    }
+
+    .panel {
+      margin-top: 1.35rem;
+      background: transparent;
+      border-top: none;
+      border-bottom: none;
+      border-left: none;
+      border-right: none;
+      border-radius: 0;
+      box-shadow: none;
+      padding: 0.2rem 0 0.35rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .panel.alt {
+      background:
+        linear-gradient(100deg, rgba(231, 239, 255, 0.58) 0%, rgba(239, 236, 255, 0.48) 58%, transparent 100%);
+      padding: 1rem 1rem 1.1rem;
+    }
+
+    .panel h2 {
+      font-size: clamp(1.4rem, 2.5vw, 2rem);
+      margin-bottom: 0.62rem;
+    }
+
+    .panel h2::after {
+      content: "";
+      display: block;
+      width: 96px;
+      height: 2px;
+      margin-top: 0.45rem;
+      border-radius: 0;
+      background: linear-gradient(90deg, var(--accent), var(--teal));
+    }
+
+    .agenda-table-wrap {
+      margin-top: 0.8rem;
+      overflow-x: auto;
+      border-top: 1px solid #cbd8e6;
+      border-bottom: 1px solid #d4deea;
+      background: linear-gradient(180deg, rgba(239, 245, 253, 0.88) 0%, rgba(231, 239, 250, 0.72) 100%);
+    }
+
+    .agenda-timeline {
+      margin-top: 0.35rem;
+      margin-bottom: 0.95rem;
+      padding: 0.9rem 0.15rem 0.45rem;
+      border-top: 1px solid #cbd8e6;
+      border-bottom: 1px solid #d7e1ec;
+      overflow-x: auto;
+      background: linear-gradient(180deg, rgba(236, 242, 252, 0.38) 0%, rgba(255, 255, 255, 0) 100%);
+    }
+
+    .timeline-track {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(12, minmax(105px, 1fr));
+      gap: 0;
+      min-width: 1220px;
+      padding-top: 1.38rem;
+    }
+
+    .timeline-track::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0.58rem;
+      top: 0.64rem;
+      height: 2px;
+      background: linear-gradient(90deg, #9aadd2 0%, #8ea2ca 100%);
+    }
+
+    .timeline-track::after {
+      content: "";
+      position: absolute;
+      right: 0.1rem;
+      top: 0.44rem;
+      width: 0.36rem;
+      height: 0.36rem;
+      border-top: 2px solid #8ea2ca;
+      border-right: 2px solid #8ea2ca;
+      transform: rotate(45deg);
+    }
+
+    .t-node {
+      position: relative;
+      padding: 0 0.45rem 0 0.3rem;
+      --node: #7f96ad;
+    }
+
+    .t-node::before {
+      content: none;
+    }
+
+    .t-node::after {
+      content: "";
+      position: absolute;
+      left: 0.6rem;
+      top: 0.56rem;
+      width: 2px;
+      height: 0.62rem;
+      background: var(--node);
+    }
+
+    .t-time {
+      display: block;
+      font-size: 0.64rem;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      color: #6a7b8d;
+      margin-bottom: 0.14rem;
+      margin-top: 0.12rem;
+      text-transform: uppercase;
+    }
+
+    .t-duration {
+      display: block;
+      margin-top: 1.42rem;
+      margin-bottom: 0.08rem;
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: #1f2f40;
+      letter-spacing: 0.01em;
+    }
+
+    .t-label {
+      display: block;
+      font-size: 0.78rem;
+      line-height: 1.25;
+      font-weight: 650;
+      color: #2b3b4d;
+    }
+
+    .t-label::before {
+      display: inline-block;
+      margin-right: 0.28rem;
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: var(--node);
+      vertical-align: baseline;
+    }
+
+    .t-node.lecture .t-label::before {
+      content: "◆";
+    }
+
+    .t-node.handson .t-label::before {
+      content: "⬢";
+    }
+
+    .t-node.break .t-label::before {
+      content: "—";
+    }
+
+    .t-node.discussion .t-label::before {
+      content: "◉";
+    }
+
+    .t-node.lecture {
+      --node: #2f6df6;
+    }
+
+    .t-node.handson {
+      --node: #6f4cf4;
+    }
+
+    .t-node.break {
+      --node: #6d8195;
+    }
+
+    .t-node.discussion {
+      --node: #415f82;
+    }
+
+    .agenda-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 860px;
+      table-layout: fixed;
+    }
+
+    .agenda-table thead th {
+      text-align: left;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #5e7082;
+      font-weight: 800;
+      padding: 0.62rem 0.45rem;
+      border-bottom: 1px solid #cfdbe8;
+    }
+
+    .agenda-table td {
+      padding: 0.68rem 0.45rem 0.72rem;
+      border-bottom: 1px solid #d4deea;
+      vertical-align: top;
+      background: transparent;
+    }
+
+    .agenda-table tbody tr:nth-child(even) td {
+      background: rgba(235, 242, 251, 0.62);
+    }
+
+    .agenda-table tbody tr:hover td {
+      background: rgba(224, 235, 248, 0.86);
+    }
+
+    .agenda-table tr td:first-child {
+      border-left: 2px solid transparent;
+      padding-left: 0.55rem;
+    }
+
+    .agenda-table tr.lecture td:first-child {
+      border-left-color: #2f6df6;
+    }
+
+    .agenda-table tr.handson td:first-child {
+      border-left-color: #6f4cf4;
+    }
+
+    .agenda-table tr.break td:first-child {
+      border-left-color: #6d8195;
+    }
+
+    .agenda-table tr.discussion td:first-child {
+      border-left-color: #415f82;
+    }
+
+    .agenda-duration {
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: #1d335f;
+    }
+
+    .agenda-clock {
+      display: block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: #6a7b8d;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .agenda-topic {
+      font-weight: 700;
+      color: #1b2a38;
+      margin: 0;
+      font-size: 0.98rem;
+      line-height: 1.33;
+    }
+
+    .agenda-meta {
+      margin: 0;
+      color: #5b6874;
+      font-size: 0.88rem;
+      font-weight: 600;
+    }
+
+    .agenda-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-size: 0.73rem;
+      font-weight: 800;
+      padding: 0.16rem 0.34rem;
+      border-radius: 2px;
+      border: 1px solid transparent;
+    }
+
+    .agenda-tag::before {
+      font-size: 0.9rem;
+      line-height: 1;
+    }
+
+    .agenda-tag.lecture {
+      color: #2f6df6;
+      background: rgba(47, 109, 246, 0.1);
+      border-color: rgba(47, 109, 246, 0.24);
+    }
+
+    .agenda-tag.lecture::before {
+      content: "◆";
+    }
+
+    .agenda-tag.handson {
+      color: #5f3fe8;
+      background: rgba(111, 76, 244, 0.12);
+      border-color: rgba(111, 76, 244, 0.26);
+    }
+
+    .agenda-tag.handson::before {
+      content: "⬢";
+    }
+
+    .agenda-tag.break {
+      color: #607283;
+      background: rgba(112, 129, 148, 0.12);
+      border-color: rgba(112, 129, 148, 0.24);
+    }
+
+    .agenda-tag.break::before {
+      content: "—";
+    }
+
+    .agenda-tag.discussion {
+      color: #415f82;
+      background: rgba(73, 99, 136, 0.12);
+      border-color: rgba(73, 99, 136, 0.24);
+    }
+
+    .agenda-tag.discussion::before {
+      content: "◉";
+    }
+
+    .speakers {
+      margin-top: 0.75rem;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.72rem;
+    }
+
+    .speaker {
+      border-left: 2px solid #90a8c3;
+      border-right: none;
+      border-bottom: 1px solid #d0dbe7;
+      border-top: none;
+      border-radius: 0;
+      background: linear-gradient(90deg, rgba(233, 239, 251, 0.36) 0%, rgba(255, 255, 255, 0) 70%);
+      padding: 0.85rem 0.75rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .speaker::before {
+      content: "";
+      display: none;
+    }
+
+    .speaker h3 {
+      font-size: 1.1rem;
+      margin-bottom: 0.38rem;
+    }
+
+    .speaker p {
+      margin: 0;
+      font-size: 0.95rem;
+    }
+
+    .cols-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.8rem;
+      align-items: start;
+    }
+
+    .subcard {
+      border-left: 2px solid #95abc3;
+      border-right: none;
+      border-top: none;
+      border-bottom: 1px solid #d0dae5;
+      border-radius: 0;
+      padding: 0.8rem 0.75rem;
+      background: linear-gradient(90deg, rgba(233, 239, 251, 0.3) 0%, rgba(255, 255, 255, 0) 72%);
+    }
+
+    .subcard h3 {
+      font-size: 1.02rem;
+      margin-bottom: 0.45rem;
+    }
+
+    .materials-list {
+      margin: 0.6rem 0 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 0.44rem;
+    }
+
+    .materials-list li {
+      border-left: 2px solid #95abc5;
+      border-right: none;
+      border-bottom: 1px solid #d4deea;
+      border-top: none;
+      border-radius: 0;
+      padding: 0.54rem 0.3rem;
+      font-weight: 700;
+      color: #22313f;
+      background: linear-gradient(90deg, rgba(233, 239, 251, 0.35) 0%, rgba(255, 255, 255, 0) 75%);
+    }
+
+    .refs-note {
+      border-left: 2px solid #93a9c4;
+      border-right: none;
+      border-top: none;
+      border-bottom: 1px solid #c8d4e2;
+      border-radius: 0;
+      padding: 0.8rem 0.6rem;
+      background: linear-gradient(90deg, rgba(233, 239, 251, 0.35) 0%, rgba(255, 255, 255, 0) 75%);
+      color: #495a6a;
+      font-weight: 600;
+    }
+
+    footer {
+      margin-top: 1.1rem;
+      color: #5a6773;
+      font-size: 0.9rem;
+      text-align: center;
+      padding: 0.6rem 0 1rem;
+    }
+
+    @media (max-width: 1060px) {
+      .hero {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-side {
+        display: none;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .site-nav {
+        position: sticky;
+        top: 0;
+        left: auto;
+        bottom: auto;
+        width: auto;
+        border-right: none;
+        border-bottom: 1px solid #c5d0dc;
+      }
+
+      .nav-inner {
+        height: auto;
+        margin: 0 auto;
+        padding: 0.72rem 0.5rem;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .brand {
+        display: none;
+      }
+
+      .side-info {
+        display: none;
+      }
+
+      .menu {
+        flex-direction: row;
+        width: 100%;
+        overflow-x: auto;
+        white-space: nowrap;
+        margin-bottom: 0;
+      }
+
+      .menu-row {
+        align-items: center;
+        gap: 0.36rem;
+      }
+
+      .nav-logo {
+        width: 28px;
+        min-height: 0;
+        height: 52px;
+        margin-top: 0;
+      }
+
+      .nav-main {
+        gap: 0.2rem;
+      }
+
+      .agenda-timeline {
+        margin-bottom: 0.8rem;
+      }
+
+      .speakers,
+      .cols-2 {
+        grid-template-columns: 1fr;
+      }
+
+      .panel {
+        padding: 1.1rem 1rem;
+      }
+
+      .nav-inner,
+      .wrap {
+        padding-left: 0.36rem;
+        padding-right: 0.36rem;
+      }
+
+      .wrap {
+        margin-left: auto;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      .btn,
+      .agenda-table tbody tr {
+        transition: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="site-nav">
+    <div class="nav-inner">
+      <div class="menu-row">
+        <img class="nav-logo" src="logo.png" alt="Tutorial logo">
+        <div class="nav-main">
+          <div class="brand">Menu</div>
+          <div class="menu" aria-label="Primary navigation">
+            <a href="#overview">Overview</a>
+            <a href="#agenda">Agenda</a>
+            <a href="#materials">Materials</a>
+          </div>
+        </div>
+      </div>
+      <div class="side-info">
+        <div class="side-meta" aria-label="Event location">
+          <div class="contact-title">Location</div>
+          <div class="contact-line meta-line">
+            <span class="cicon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 21s6-5.6 6-10.2A6 6 0 1 0 6 10.8C6 15.4 12 21 12 21z"/><circle cx="12" cy="10.5" r="2.2"/></svg></span>
+            <span>This tutorial will take place at MICCAI 2026.</span>
+          </div>
+          <div class="contact-line meta-line">
+            <span class="cicon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="5.5" width="17" height="15" rx="1.8"/><path d="M7.5 3.8v3.4M16.5 3.8v3.4M3.5 10.3h17"/></svg></span>
+            <span>4-8 October 2026 • ADNEC Centre, Abu Dhabi</span>
+          </div>
+        </div>
+        <div class="side-contact" aria-label="Contact information">
+          <div class="contact-title">Contact</div>
+          <p class="contact-note">Do not hesitate to contact us on X, LinkedIn, or by email.</p>
+          <div class="contact-line">
+            <span class="cicon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.2"/><path d="M5 19c.7-3.2 3.6-5.4 7-5.4s6.3 2.2 7 5.4"/></svg></span>
+            <span>John Kalkhof</span>
+          </div>
+          <div class="contact-line">
+            <span class="cicon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="6" width="17" height="12" rx="1.6"/><path d="M4.5 7l7.5 5.5L19.5 7"/></svg></span>
+            <span><a href="mailto:john.kalkhof@inria.fr">john.kalkhof@inria.fr</a></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <canvas id="ca-bg" aria-hidden="true"></canvas>
+
+  <main class="wrap">
+    <section id="overview" class="hero">
+      <div class="hero-main">
+        <p class="kicker">MICCAI 2026 Tutorial</p>
+        <h1>Learning to <span id="title-scramble" class="title-gradient" data-final="Self-Organize">Self-Organize</span>: Neural Cellular Automata for Medical Imaging</h1>
+        <p class="hero-meta">Organizers: John Kalkhof, Caroline Essert, Marco Lorenzi, Carsten Marr, Anirban Mukhopadhyay, Camila González, Marawan Elbatel, Daniel Lang, Ario Sadafi, Maximilian Buser, Michael Deutges, Jonas Mehtali, Henry Krumb, Mirko Konstantin, Nick Lemke</p>
+        <div class="glance-block" aria-label="Tutorial quick facts">
+          <ul class="facts-mini">
+            <li>
+              <span class="icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M7 4h10M7 20h10M8 4c0 4 4 4 4 8s-4 4-4 8M16 4c0 4-4 4-4 8s4 4 4 8"/></svg>
+              </span>
+              <span><span class="label">Duration</span><span class="value">~4h (incl breaks)</span></span>
+            </li>
+            <li>
+              <span class="icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="7.5" height="14"/><rect x="13" y="5" width="7.5" height="14"/></svg>
+              </span>
+              <span><span class="label">Format</span><span class="value">Lecture ↔ Hands-on (~50/50)</span></span>
+            </li>
+            <li>
+              <span class="icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M4 16h16M6 16v2h12v-2M8 18v2h8v-2M7 11a4 4 0 0 1 7-2 3.5 3.5 0 1 1 1 7H8a3 3 0 1 1-1-5z"/></svg>
+              </span>
+              <span><span class="label">Delivery</span><span class="value">Google Colab</span></span>
+            </li>
+            <li>
+              <span class="icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><rect x="4" y="5.5" width="16" height="10" rx="1"/><path d="M10 19h4M8 19h8"/></svg>
+              </span>
+              <span><span class="label">Requirements</span><span class="value">Laptop</span></span>
+            </li>
+          </ul>
+        </div>
+        <p><strong>Abstract</strong></p>
+        <p class="hero-abstract">
+          Medical image analysis increasingly relies on large neural networks. While powerful, these models often lack robustness across diverse data,
+          are difficult to interpret, and are inefficient for large-scale or edge computing applications. Neural Cellular Automata (NCA) are an emerging
+          architectural paradigm: they learn local update rules that are iteratively applied so that complex anatomical or morphological patterns emerge
+          through self-organization. This formulation enables models to reach performance comparable to much larger architectures while using two to
+          three orders of magnitude fewer parameters and providing insight into the intermediate updates. This tutorial introduces the foundations of NCAs,
+          their training and emergent behavior, and reviews recent medical-imaging applications including segmentation, temporally consistent synthesis,
+          robust classification, and fast surrogate modeling for therapy planning. Prepared Colab-based hands-on sessions will guide participants to train
+          models, visualize local updates, and apply NCAs to example tasks.
+        </p>
+        <div class="cta">
+          <a class="btn primary" href="#agenda">View Agenda</a>
+          <a class="btn" href="#materials">Access Materials</a>
+        </div>
+      </div>
+
+      <aside class="hero-side" aria-label="Cellular automata preview">
+        <div class="preview-deck" aria-label="Concept preview deck">
+          <article class="preview-card active" data-preview-card>
+            <h2 class="preview-title">Cellular Automata</h2>
+            <div class="preview-media">
+              <canvas id="ca-preview-canvas" aria-label="Conway Game of Life animation"></canvas>
+            </div>
+            <p class="preview-copy">Conway's Game of Life uses fixed local rules: survive with 2-3 neighbors, birth with exactly 3.</p>
+            <div class="preview-progress-row" data-pause-toggle aria-hidden="true">
+              <span class="preview-state playing" data-play-state></span>
+              <div class="preview-progress"><span data-progress-fill></span></div>
+            </div>
+          </article>
+          <article class="preview-card" data-preview-card>
+            <h2 class="preview-title">Neural CA</h2>
+            <div class="preview-media">
+              <video autoplay muted playsinline preload="metadata" aria-label="Growing neural cellular automata preview">
+                <source src="growing_salamander.mp4" type="video/mp4">
+              </video>
+            </div>
+            <p class="preview-copy">Neural cellular automata learn update rules rather than hand-coding them, enabling controlled emergent growth.</p>
+            <div class="preview-progress-row" data-pause-toggle aria-hidden="true">
+              <span class="preview-state playing" data-play-state></span>
+              <div class="preview-progress"><span data-progress-fill></span></div>
+            </div>
+          </article>
+          <article class="preview-card" data-preview-card>
+            <h2 class="preview-title">Medical NCA</h2>
+            <div class="preview-media">
+              <video autoplay muted playsinline preload="metadata" aria-label="Medical segmentation preview">
+                <source src="2023-06-16_11-54-29.mp4" type="video/mp4">
+              </video>
+            </div>
+            <p class="preview-copy">In medical imaging, learned local interactions can iteratively refine structure into robust segmentation outputs.</p>
+            <div class="preview-progress-row" data-pause-toggle aria-hidden="true">
+              <span class="preview-state playing" data-play-state></span>
+              <div class="preview-progress"><span data-progress-fill></span></div>
+            </div>
+          </article>
+          <div class="preview-switch" aria-label="Switch preview">
+            <button type="button" class="active" data-preview-switch data-index="0" aria-pressed="true">Cellular Automata</button>
+            <button type="button" data-preview-switch data-index="1" aria-pressed="false">Neural CA</button>
+            <button type="button" data-preview-switch data-index="2" aria-pressed="false">Medical NCA</button>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="panel alt">
+      <h2>Why This Tutorial</h2>
+      <p>
+        Medical image analysis increasingly relies on large neural networks, which raises challenges around computational efficiency, robustness across
+        heterogeneous data, and interpretability in clinical practice. NCA approaches these problems through local iterative updates that produce global
+        structure via self-organization.
+      </p>
+      <p>
+        The tutorial is designed for participants familiar with deep learning but new to NCAs, and aims to provide both conceptual understanding and practical
+        experience. By the end, participants should be able to train NCAs for medical imaging tasks, visualize their iterative dynamics, and evaluate trade-offs
+        between performance, robustness, and efficiency.
+      </p>
+    </section>
+
+    <section id="agenda" class="panel">
+      <h2>Agenda</h2>
+      <div class="agenda-timeline" aria-label="Agenda timeline overview">
+        <div class="timeline-track">
+          <div class="t-node lecture"><span class="t-duration">10 min</span><span class="t-time">0:00-0:10</span><span class="t-label">Welcome</span></div>
+          <div class="t-node lecture"><span class="t-duration">20 min</span><span class="t-time">0:10-0:30</span><span class="t-label">Foundations</span></div>
+          <div class="t-node handson"><span class="t-duration">30 min</span><span class="t-time">0:30-1:00</span><span class="t-label">Hands-on 1</span></div>
+          <div class="t-node break"><span class="t-duration">10 min</span><span class="t-time">1:00-1:10</span><span class="t-label">Break</span></div>
+          <div class="t-node lecture"><span class="t-duration">20 min</span><span class="t-time">1:10-1:30</span><span class="t-label">Applications</span></div>
+          <div class="t-node handson"><span class="t-duration">40 min</span><span class="t-time">1:30-2:10</span><span class="t-label">Hands-on 2</span></div>
+          <div class="t-node break"><span class="t-duration">10 min</span><span class="t-time">2:10-2:20</span><span class="t-label">Break</span></div>
+          <div class="t-node lecture"><span class="t-duration">20 min</span><span class="t-time">2:20-2:40</span><span class="t-label">Simulation</span></div>
+          <div class="t-node lecture"><span class="t-duration">10 min</span><span class="t-time">2:40-2:50</span><span class="t-label">Tips</span></div>
+          <div class="t-node handson"><span class="t-duration">30 min</span><span class="t-time">2:50-3:20</span><span class="t-label">Hands-on 3</span></div>
+          <div class="t-node lecture"><span class="t-duration">15 min</span><span class="t-time">3:20-3:35</span><span class="t-label">Outlook</span></div>
+          <div class="t-node discussion"><span class="t-duration">15 min</span><span class="t-time">3:35-3:50</span><span class="t-label">Q&amp;A</span></div>
+        </div>
+      </div>
+      <div class="agenda-table-wrap">
+        <table class="agenda-table" aria-label="Detailed agenda">
+          <thead>
+            <tr>
+              <th style="width: 120px;">Duration</th>
+              <th style="width: 120px;">Time</th>
+              <th style="width: 160px;">Session</th>
+              <th>Topic</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="lecture">
+              <td><span class="agenda-duration">10 min</span></td>
+              <td><span class="agenda-clock">0:00-0:10</span></td>
+              <td><span class="agenda-tag lecture">Lecture</span></td>
+              <td><p class="agenda-topic">Welcome and setup (Wi-Fi check, Colab access, goals)</p></td>
+            </tr>
+            <tr class="lecture">
+              <td><span class="agenda-duration">20 min</span></td>
+              <td><span class="agenda-clock">0:10-0:30</span></td>
+              <td><span class="agenda-tag lecture">Lecture</span></td>
+              <td><p class="agenda-topic">Foundations of NCA (CA → NCA, local updates, emergence, architecture)</p></td>
+            </tr>
+            <tr class="handson">
+              <td><span class="agenda-duration">30 min</span></td>
+              <td><span class="agenda-clock">0:30-1:00</span></td>
+              <td><span class="agenda-tag handson">Hands-on</span></td>
+              <td><p class="agenda-topic">Train a minimal NCA in Colab and visualize iterative updates</p></td>
+            </tr>
+            <tr class="break">
+              <td><span class="agenda-duration">10 min</span></td>
+              <td><span class="agenda-clock">1:00-1:10</span></td>
+              <td><span class="agenda-tag break">Break</span></td>
+              <td><p class="agenda-topic">Break</p></td>
+            </tr>
+            <tr class="lecture">
+              <td><span class="agenda-duration">20 min</span></td>
+              <td><span class="agenda-clock">1:10-1:30</span></td>
+              <td><span class="agenda-tag lecture">Lecture</span></td>
+              <td><p class="agenda-topic">Applications in medical imaging (segmentation, registration, detection)</p></td>
+            </tr>
+            <tr class="handson">
+              <td><span class="agenda-duration">40 min</span></td>
+              <td><span class="agenda-clock">1:30-2:10</span></td>
+              <td><span class="agenda-tag handson">Hands-on</span></td>
+              <td><p class="agenda-topic">Train classification and segmentation models; evaluate robustness</p></td>
+            </tr>
+            <tr class="break">
+              <td><span class="agenda-duration">10 min</span></td>
+              <td><span class="agenda-clock">2:10-2:20</span></td>
+              <td><span class="agenda-tag break">Break</span></td>
+              <td><p class="agenda-topic">Break</p></td>
+            </tr>
+            <tr class="lecture">
+              <td><span class="agenda-duration">20 min</span></td>
+              <td><span class="agenda-clock">2:20-2:40</span></td>
+              <td><span class="agenda-tag lecture">Lecture</span></td>
+              <td><p class="agenda-topic">Applications in medical imaging (simulation)</p></td>
+            </tr>
+            <tr class="lecture">
+              <td><span class="agenda-duration">10 min</span></td>
+              <td><span class="agenda-clock">2:40-2:50</span></td>
+              <td><span class="agenda-tag lecture">Lecture</span></td>
+              <td><p class="agenda-topic">Tips for training and technical details</p></td>
+            </tr>
+            <tr class="handson">
+              <td><span class="agenda-duration">30 min</span></td>
+              <td><span class="agenda-clock">2:50-3:20</span></td>
+              <td><span class="agenda-tag handson">Hands-on</span></td>
+              <td><p class="agenda-topic">Extend to detection/simulation</p></td>
+            </tr>
+            <tr class="lecture">
+              <td><span class="agenda-duration">15 min</span></td>
+              <td><span class="agenda-clock">3:20-3:35</span></td>
+              <td><span class="agenda-tag lecture">Lecture</span></td>
+              <td><p class="agenda-topic">Interpretability and outlook (limits, future directions)</p></td>
+            </tr>
+            <tr class="discussion">
+              <td><span class="agenda-duration">15 min</span></td>
+              <td><span class="agenda-clock">3:35-3:50</span></td>
+              <td><span class="agenda-tag discussion">Discussion</span></td>
+              <td><p class="agenda-topic">Final Q&amp;A</p></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="materials" class="panel alt">
+      <h2>Materials</h2>
+      <p>
+        Tutorial materials will follow.
+      </p>
+    </section>
+
+  <footer>
+      Contact: John Kalkhof • <a href="mailto:john.kalkhof@inria.fr">john.kalkhof@inria.fr</a> • Do not hesitate to contact us on X, LinkedIn, or by email.
+    </footer>
+  </main>
+  <script>
+    (function () {
+      const canvas = document.getElementById("ca-bg");
+      const previewCanvas = document.getElementById("ca-preview-canvas");
+      if (!canvas) return;
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const ctx = canvas.getContext("2d");
+      const lctx = previewCanvas ? previewCanvas.getContext("2d") : null;
+      let w = 0;
+      let h = 0;
+      let cols = 0;
+      let rows = 0;
+      let cell = 9;
+      let grid = [];
+      let next = [];
+      let lcols = 0;
+      let lrows = 0;
+      let lcell = 6;
+      let lgrid = [];
+      let lnext = [];
+      let raf = 0;
+      let step = 0;
+      let previewLifePaused = false;
+
+      function seed() {
+        grid = new Array(cols * rows).fill(0).map(() => (Math.random() > 0.84 ? 1 : 0));
+        next = new Array(cols * rows).fill(0);
+      }
+
+      function lseed() {
+        if (!previewCanvas) return;
+        lgrid = new Array(lcols * lrows).fill(0).map(() => (Math.random() > 0.8 ? 1 : 0));
+        lnext = new Array(lcols * lrows).fill(0);
+      }
+
+      function resize() {
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        w = window.innerWidth;
+        h = window.innerHeight;
+        canvas.width = Math.floor(w * dpr);
+        canvas.height = Math.floor(h * dpr);
+        canvas.style.width = w + "px";
+        canvas.style.height = h + "px";
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        cell = w > 1200 ? 10 : w > 800 ? 9 : 8;
+        cols = Math.ceil(w / cell);
+        rows = Math.ceil(h / cell);
+        seed();
+
+        if (previewCanvas && lctx) {
+          const box = previewCanvas.getBoundingClientRect();
+          const lw = Math.max(40, Math.floor(box.width || 100));
+          const lh = Math.max(40, Math.floor(box.height || 100));
+          previewCanvas.width = Math.floor(lw * dpr);
+          previewCanvas.height = Math.floor(lh * dpr);
+          lctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          lcell = 10;
+          lcols = Math.ceil(lw / lcell);
+          lrows = Math.ceil(lh / lcell);
+          lseed();
+        }
+      }
+
+      function idx(x, y) {
+        return ((y + rows) % rows) * cols + ((x + cols) % cols);
+      }
+
+      function lidx(x, y) {
+        return ((y + lrows) % lrows) * lcols + ((x + lcols) % lcols);
+      }
+
+      function tick() {
+        for (let y = 0; y < rows; y++) {
+          for (let x = 0; x < cols; x++) {
+            const i = idx(x, y);
+            const n =
+              grid[idx(x - 1, y - 1)] + grid[idx(x, y - 1)] + grid[idx(x + 1, y - 1)] +
+              grid[idx(x - 1, y)] + grid[idx(x + 1, y)] +
+              grid[idx(x - 1, y + 1)] + grid[idx(x, y + 1)] + grid[idx(x + 1, y + 1)];
+            next[i] = n === 3 || (grid[i] && n === 2) ? 1 : 0;
+          }
+        }
+        const temp = grid;
+        grid = next;
+        next = temp;
+      }
+
+      function ltick() {
+        if (!previewCanvas || !lctx) return;
+        for (let y = 0; y < lrows; y++) {
+          for (let x = 0; x < lcols; x++) {
+            const i = lidx(x, y);
+            const n =
+              lgrid[lidx(x - 1, y - 1)] + lgrid[lidx(x, y - 1)] + lgrid[lidx(x + 1, y - 1)] +
+              lgrid[lidx(x - 1, y)] + lgrid[lidx(x + 1, y)] +
+              lgrid[lidx(x - 1, y + 1)] + lgrid[lidx(x, y + 1)] + lgrid[lidx(x + 1, y + 1)];
+            lnext[i] = n === 3 || (lgrid[i] && n === 2) ? 1 : 0;
+          }
+        }
+        const temp = lgrid;
+        lgrid = lnext;
+        lnext = temp;
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, w, h);
+        ctx.fillStyle = "rgba(74, 102, 198, 0.2)";
+        for (let y = 0; y < rows; y++) {
+          for (let x = 0; x < cols; x++) {
+            if (grid[idx(x, y)] === 1) {
+              ctx.fillRect(x * cell + 1.5, y * cell + 1.5, 1.8, 1.8);
+            }
+          }
+        }
+      }
+
+      function ldraw() {
+        if (!previewCanvas || !lctx) return;
+        const lw = previewCanvas.width / (Math.min(window.devicePixelRatio || 1, 2));
+        const lh = previewCanvas.height / (Math.min(window.devicePixelRatio || 1, 2));
+        lctx.clearRect(0, 0, lw, lh);
+        lctx.fillStyle = "rgba(58, 85, 156, 0.26)";
+        for (let y = 0; y < lrows; y++) {
+          for (let x = 0; x < lcols; x++) {
+            if (lgrid[lidx(x, y)] === 1) {
+              lctx.fillRect(x * lcell + 1.2, y * lcell + 1.2, 4.8, 4.8);
+            }
+          }
+        }
+      }
+
+      function loop() {
+        step++;
+        if (step % 5 === 0) tick();
+        if (!previewLifePaused && step % 17 === 0) ltick();
+        if (step % 340 === 0) seed();
+        draw();
+        ldraw();
+        raf = requestAnimationFrame(loop);
+      }
+
+      function resetPreviewLife() {
+        if (!previewCanvas || !lctx) return;
+        lseed();
+        ldraw();
+      }
+
+      window.__resetPreviewLife = resetPreviewLife;
+      window.__setPreviewLifePaused = function (paused) {
+        previewLifePaused = Boolean(paused);
+      };
+
+      resize();
+      if (!reduceMotion) loop();
+      else {
+        draw();
+        ldraw();
+      }
+      window.addEventListener("resize", resize);
+      window.addEventListener("beforeunload", function () {
+        if (raf) cancelAnimationFrame(raf);
+        if (window.__resetPreviewLife) delete window.__resetPreviewLife;
+        if (window.__setPreviewLifePaused) delete window.__setPreviewLifePaused;
+      });
+    })();
+
+    (function () {
+      const cards = Array.from(document.querySelectorAll("[data-preview-card]"));
+      if (!cards.length) return;
+      const fills = cards.map((c) => c.querySelector("[data-progress-fill]"));
+      const playStates = cards.map((c) => c.querySelector("[data-play-state]"));
+      const pauseRows = cards.map((c) => c.querySelector("[data-pause-toggle]"));
+      const switches = Array.from(document.querySelectorAll("[data-preview-switch]"));
+      const deck = cards[0].parentElement;
+      const fixedLifeMs = 9800;
+      const fallbackMediaMs = 9800;
+      const medicalTrimSec = 7;
+      let active = 0;
+      let started = performance.now();
+      let raf = 0;
+      let paused = false;
+      let pauseAt = 0;
+
+      function renderPlayState() {
+        playStates.forEach((el) => {
+          if (!el) return;
+          el.classList.toggle("playing", !paused);
+          el.classList.toggle("paused", paused);
+        });
+      }
+
+      function syncCardMedia() {
+        cards.forEach((card, i) => {
+          const videos = Array.from(card.querySelectorAll("video"));
+          if (!videos.length) return;
+          videos.forEach((video) => {
+            if (i === active) {
+              video.currentTime = 0;
+              if (paused) video.pause();
+              else {
+                const p = video.play();
+                if (p && typeof p.catch === "function") p.catch(() => {});
+              }
+            } else {
+              video.pause();
+              video.currentTime = 0;
+            }
+          });
+        });
+      }
+
+      function getCardDurationMs(index) {
+        if (index === 0) return fixedLifeMs;
+        const video = cards[index] ? cards[index].querySelector("video") : null;
+        if (video && Number.isFinite(video.duration) && video.duration > 0) {
+          return video.duration * 1000;
+        }
+        return fallbackMediaMs;
+      }
+
+      function getActiveVideo() {
+        return cards[active] ? cards[active].querySelector("video") : null;
+      }
+
+      function setActiveMediaPaused(shouldPause) {
+        const activeVideo = cards[active] ? cards[active].querySelector("video") : null;
+        if (activeVideo) {
+          if (shouldPause) activeVideo.pause();
+          else {
+            const p = activeVideo.play();
+            if (p && typeof p.catch === "function") p.catch(() => {});
+          }
+        }
+        if (typeof window.__setPreviewLifePaused === "function") {
+          window.__setPreviewLifePaused(shouldPause || active !== 0);
+        }
+      }
+
+      function setPaused(nextPaused) {
+        if (paused === nextPaused) return;
+        paused = nextPaused;
+        if (paused) {
+          pauseAt = performance.now();
+        } else {
+          const pausedFor = performance.now() - pauseAt;
+          started += pausedFor;
+        }
+        renderPlayState();
+        setActiveMediaPaused(paused);
+      }
+
+      function activate(index) {
+        const prev = active;
+        active = index;
+        cards.forEach((card, i) => {
+          card.classList.toggle("active", i === active);
+        });
+        switches.forEach((btn, i) => {
+          const on = i === active;
+          btn.classList.toggle("active", on);
+          btn.setAttribute("aria-pressed", on ? "true" : "false");
+        });
+        if (active === 0 && prev !== 0 && typeof window.__resetPreviewLife === "function") {
+          window.__resetPreviewLife();
+        }
+        syncCardMedia();
+        setActiveMediaPaused(paused);
+      }
+
+      function frame(now) {
+        if (!paused) {
+          const activeVideo = getActiveVideo();
+          if (activeVideo && Number.isFinite(activeVideo.duration) && activeVideo.duration > 0) {
+            const effectiveDurationSec = active === 2
+              ? Math.max(0.25, activeVideo.duration - medicalTrimSec)
+              : activeVideo.duration;
+            const p = Math.min(1, activeVideo.currentTime / effectiveDurationSec);
+            fills.forEach((f, i) => {
+              if (!f) return;
+              f.style.width = i === active ? `${p * 100}%` : "0%";
+            });
+            if (activeVideo.ended || activeVideo.currentTime >= effectiveDurationSec || p >= 0.9995) {
+              started = now;
+              activate((active + 1) % cards.length);
+            }
+          } else {
+            const elapsed = now - started;
+            const durationMs = getCardDurationMs(active);
+            const p = Math.min(1, elapsed / durationMs);
+            fills.forEach((f, i) => {
+              if (!f) return;
+              f.style.width = i === active ? `${p * 100}%` : "0%";
+            });
+            if (elapsed >= durationMs) {
+              started = now;
+              activate((active + 1) % cards.length);
+            }
+          }
+        }
+        raf = requestAnimationFrame(frame);
+      }
+
+      activate(0);
+      renderPlayState();
+      raf = requestAnimationFrame(frame);
+
+      switches.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const idx = Number(btn.getAttribute("data-index"));
+          if (!Number.isFinite(idx)) return;
+          activate(Math.max(0, Math.min(cards.length - 1, idx)));
+          started = performance.now();
+          fills.forEach((f, i) => {
+            if (!f) return;
+            f.style.width = i === active ? "0%" : "0%";
+          });
+        });
+      });
+
+      pauseRows.forEach((row) => {
+        if (!row) return;
+        row.addEventListener("click", () => {
+          setPaused(!paused);
+        });
+      });
+
+      window.addEventListener("beforeunload", () => {
+        if (raf) cancelAnimationFrame(raf);
+      });
+    })();
+
+    (function () {
+      const el = document.getElementById("title-scramble");
+      if (!el) return;
+      const finalText = el.getAttribute("data-final") || el.textContent || "";
+      const gradient = "linear-gradient(90deg, #2f6df6 0%, #4e7df8 42%, #6f4cf4 100%)";
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const letters = [];
+      const slot = 0.66; // em offset per slot
+      let resizeRaf = 0;
+      let nearTimer = 0;
+      let resolveTimer = 0;
+      let resolving = false;
+      let hoverLock = false;
+      let mode = "idle"; // idle | near | scramble
+
+      function shuffleIndices(len) {
+        const arr = Array.from({ length: len }, (_, i) => i);
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = (Math.random() * (i + 1)) | 0;
+          const t = arr[i];
+          arr[i] = arr[j];
+          arr[j] = t;
+        }
+        return arr;
+      }
+
+      function build() {
+        el.textContent = "";
+        for (let i = 0; i < finalText.length; i++) {
+          const span = document.createElement("span");
+          span.className = "scramble-letter";
+          span.textContent = finalText[i];
+          letters.push(span);
+          el.appendChild(span);
+        }
+      }
+
+      function applyGlobalGradientMap() {
+        const n = Math.max(letters.length, 1);
+        letters.forEach((span, i) => {
+          const p = n <= 1 ? 0 : (i / (n - 1)) * 100;
+          span.style.backgroundImage = gradient;
+          span.style.backgroundSize = `${n * 100}% 100%`;
+          span.style.backgroundPosition = `${p}% 0`;
+        });
+      }
+
+      function scramblePositions() {
+        const map = shuffleIndices(letters.length);
+        letters.forEach((span, i) => {
+          const dx = (map[i] - i) * slot;
+          const dy = ((Math.random() * 2) - 1) * 0.5;
+          const rot = ((Math.random() * 2) - 1) * 14;
+          span.style.transform = `translate(${dx}em, ${dy}em) rotate(${rot}deg)`;
+          span.style.opacity = "0.88";
+        });
+      }
+
+      function resolvePositions(staggerMs) {
+        letters.forEach((span, i) => {
+          const delay = Math.min(i * staggerMs, 180);
+          span.style.transitionDelay = `${delay}ms`;
+          span.style.transform = "translate(0, 0) rotate(0deg)";
+          span.style.opacity = "1";
+        });
+      }
+
+      function clearDelays() {
+        letters.forEach((span) => {
+          span.style.transitionDelay = "0ms";
+        });
+      }
+
+      function stopNearShake(resolveBack) {
+        if (nearTimer) clearInterval(nearTimer);
+        nearTimer = 0;
+        letters.forEach((span) => {
+          span.style.transitionDuration = "";
+          if (resolveBack) span.style.transform = "translate(0, 0) rotate(0deg)";
+        });
+      }
+
+      function startNearShake() {
+        if (nearTimer || resolving) return;
+        clearDelays();
+        nearTimer = setInterval(() => {
+          const near = mode === "near";
+          const dxAmp = near ? 0.0102 : 0.0031;
+          const dyAmp = near ? 0.0145 : 0.0044;
+          const rAmp = near ? 0.5 : 0.165;
+          const op = near ? 0.992 : 0.998;
+          letters.forEach((span) => {
+            const dx = ((Math.random() * 2) - 1) * dxAmp;
+            const dy = ((Math.random() * 2) - 1) * dyAmp;
+            const r = ((Math.random() * 2) - 1) * rAmp;
+            span.style.transitionDuration = "120ms";
+            span.style.transform = `translate(${dx}em, ${dy}em) rotate(${r}deg)`;
+            span.style.opacity = String(op);
+          });
+        }, 100);
+      }
+
+      function scrambleOnce() {
+        if (resolveTimer) clearTimeout(resolveTimer);
+        resolving = false;
+        stopNearShake(false);
+        clearDelays();
+        letters.forEach((span) => {
+          span.style.transitionDuration = "";
+        });
+        scramblePositions();
+      }
+
+      function resolveBack(staggerMs) {
+        if (resolveTimer) clearTimeout(resolveTimer);
+        resolving = true;
+        stopNearShake(true);
+        resolvePositions(staggerMs);
+        resolveTimer = setTimeout(() => {
+          resolving = false;
+          if (mode !== "scramble") startNearShake();
+        }, Math.max(860, Math.min(1200, 640 + Math.min(letters.length * staggerMs, 180))));
+      }
+
+      function distanceToRect(x, y, rect) {
+        const dx = Math.max(rect.left - x, 0, x - rect.right);
+        const dy = Math.max(rect.top - y, 0, y - rect.bottom);
+        return Math.hypot(dx, dy);
+      }
+
+      function setMode(nextMode) {
+        if (mode === nextMode) return;
+        mode = nextMode;
+        if (mode === "scramble") {
+          scrambleOnce();
+        } else if (mode === "near") {
+          resolveBack(16);
+        } else {
+          resolveBack(16);
+        }
+      }
+
+      if (!reduceMotion) {
+        build();
+        applyGlobalGradientMap();
+        scramblePositions();
+        setTimeout(() => resolveBack(24), 320);
+        mode = "idle";
+
+        const nearThreshold = 70;
+        const scrambleThreshold = 24;
+        window.addEventListener("pointermove", (ev) => {
+          if (hoverLock) {
+            setMode("scramble");
+            return;
+          }
+          const rect = el.getBoundingClientRect();
+          const d = distanceToRect(ev.clientX, ev.clientY, rect);
+          if (d <= scrambleThreshold) setMode("scramble");
+          else if (d <= nearThreshold) setMode("near");
+          else setMode("idle");
+        });
+
+        el.addEventListener("pointerenter", () => {
+          hoverLock = true;
+          setMode("scramble");
+        });
+
+        el.addEventListener("pointerleave", () => {
+          hoverLock = false;
+          setMode("near");
+        });
+
+        window.addEventListener("pointerleave", () => {
+          hoverLock = false;
+          setMode("idle");
+        });
+
+        window.addEventListener("resize", () => {
+          if (resizeRaf) cancelAnimationFrame(resizeRaf);
+          resizeRaf = requestAnimationFrame(applyGlobalGradientMap);
+        });
+        window.addEventListener("beforeunload", () => {
+          if (resolveTimer) clearTimeout(resolveTimer);
+        });
+      } else {
+        el.textContent = finalText;
+      }
+    })();
+
+    (function () {
+      if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+      window.addEventListener("pageshow", function () {
+        window.scrollTo(0, 0);
+      });
+    })();
+  </script>
+</body>
+</html>
