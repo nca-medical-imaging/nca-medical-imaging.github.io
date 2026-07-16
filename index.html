@@ -518,6 +518,12 @@
       color: var(--accent);
     }
 
+    .kicker-details {
+      margin-left: 0.55rem;
+      color: #52677f;
+      letter-spacing: 0.06em;
+    }
+
     .hero h1 {
       font-size: clamp(2rem, 4.8vw, 3.45rem);
       max-width: none;
@@ -1203,15 +1209,19 @@
         </div>
       </div>
       <div class="side-info">
-        <div class="side-meta" aria-label="Event location">
-          <div class="contact-title">Location</div>
+        <div class="side-meta" aria-label="Event details">
+          <div class="contact-title">Event Details</div>
           <div class="contact-line meta-line">
             <span class="cicon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 21s6-5.6 6-10.2A6 6 0 1 0 6 10.8C6 15.4 12 21 12 21z"/><circle cx="12" cy="10.5" r="2.2"/></svg></span>
             <span>This tutorial will take place at MICCAI 2026.</span>
           </div>
           <div class="contact-line meta-line">
             <span class="cicon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="5.5" width="17" height="15" rx="1.8"/><path d="M7.5 3.8v3.4M16.5 3.8v3.4M3.5 10.3h17"/></svg></span>
-            <span>4-8 October 2026 • ADNEC Centre, Abu Dhabi</span>
+            <span>Strasbourg Convention Center, France</span>
+          </div>
+          <div class="contact-line meta-line">
+            <span class="cicon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.5 2"/></svg></span>
+            <span>Day 5 – Thursday, October 1, 2026<br>8:00-12:30</span>
           </div>
         </div>
         <div class="side-contact" aria-label="Contact information">
@@ -1235,7 +1245,7 @@
   <main class="wrap">
     <section id="overview" class="hero">
       <div class="hero-main">
-        <p class="kicker">MICCAI 2026 Tutorial</p>
+        <p class="kicker">MICCAI 2026 Tutorial <span class="kicker-details">• Thursday, October 1, 2026 • 8:00-12:30</span></p>
         <h1>Learning to <span id="title-scramble" class="title-gradient" data-final="Self-Organize">Self-Organize</span>: Neural Cellular Automata for Medical Imaging</h1>
         <p class="hero-meta">Organizers: John Kalkhof, Caroline Essert, Marco Lorenzi, Carsten Marr, Anirban Mukhopadhyay, Camila González, Marawan Elbatel, Daniel Lang, Ario Sadafi, Maximilian Buser, Michael Deutges, Jonas Mehtali, Henry Krumb, Mirko Konstantin, Nick Lemke</p>
         <div class="glance-block" aria-label="Tutorial quick facts">
