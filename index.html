@@ -860,7 +860,7 @@
     .agenda-table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 860px;
+      min-width: 1040px;
       table-layout: fixed;
     }
 
@@ -933,6 +933,17 @@
       margin: 0;
       font-size: 0.98rem;
       line-height: 1.33;
+    }
+
+    .agenda-speaker {
+      color: var(--accent);
+      font-size: 0.88rem;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+
+    .agenda-speaker:hover {
+      text-decoration: underline;
     }
 
     .agenda-meta {
@@ -1379,6 +1390,7 @@
               <th style="width: 120px;">Duration</th>
               <th style="width: 120px;">Time</th>
               <th style="width: 160px;">Session</th>
+              <th style="width: 170px;">Speaker</th>
               <th>Topic</th>
             </tr>
           </thead>
@@ -1387,66 +1399,77 @@
               <td><span class="agenda-duration">10 min</span></td>
               <td><span class="agenda-clock">08:00-08:10</span></td>
               <td><span class="agenda-tag lecture">Lecture</span></td>
+              <td><a class="agenda-speaker" href="https://www.linkedin.com/in/john-kalkhof-708639261/" target="_blank" rel="noopener noreferrer">John Kalkhof</a></td>
               <td><p class="agenda-topic">Welcome and setup (Wi-Fi check, Colab access, goals)</p></td>
             </tr>
             <tr class="lecture">
               <td><span class="agenda-duration">20 min</span></td>
               <td><span class="agenda-clock">08:10-08:30</span></td>
               <td><span class="agenda-tag lecture">Lecture</span></td>
+              <td><a class="agenda-speaker" href="https://www.linkedin.com/in/john-kalkhof-708639261/" target="_blank" rel="noopener noreferrer">John Kalkhof</a></td>
               <td><p class="agenda-topic">Foundations of NCA (CA → NCA, local updates, emergence, architecture)</p></td>
             </tr>
             <tr class="handson">
               <td><span class="agenda-duration">30 min</span></td>
               <td><span class="agenda-clock">08:30-09:00</span></td>
               <td><span class="agenda-tag handson">Hands-on</span></td>
+              <td><a class="agenda-speaker" href="https://www.linkedin.com/in/michael-deutges-02a036425/" target="_blank" rel="noopener noreferrer">Michael Deutges</a></td>
               <td><p class="agenda-topic">Train a minimal NCA in Colab and visualize iterative updates</p></td>
             </tr>
             <tr class="lecture">
               <td><span class="agenda-duration">20 min</span></td>
               <td><span class="agenda-clock">09:00-09:20</span></td>
               <td><span class="agenda-tag lecture">Lecture</span></td>
+              <td><a class="agenda-speaker" href="https://www.linkedin.com/in/daniel-m-lang/" target="_blank" rel="noopener noreferrer">Daniel Lang</a></td>
               <td><p class="agenda-topic">Applications in medical imaging (segmentation, registration, detection)</p></td>
             </tr>
             <tr class="handson">
               <td><span class="agenda-duration">40 min</span></td>
               <td><span class="agenda-clock">09:20-10:00</span></td>
               <td><span class="agenda-tag handson">Hands-on</span></td>
+              <td><a class="agenda-speaker" href="https://www.linkedin.com/in/marawan-elbatel/?skipRedirect=true" target="_blank" rel="noopener noreferrer">Marawan Elbatel</a></td>
               <td><p class="agenda-topic">Train classification and segmentation models; evaluate robustness</p></td>
             </tr>
             <tr class="break">
               <td><span class="agenda-duration">30 min</span></td>
               <td><span class="agenda-clock">10:00-10:30</span></td>
               <td><span class="agenda-tag break">Break</span></td>
-              <td><p class="agenda-topic">Break</p></td>
+              <td><span role="img" aria-label="Coffee break">☕</span></td>
+              <td><p class="agenda-topic" role="img" aria-label="Coffee and croissant">☕ 🥐</p></td>
             </tr>
             <tr class="lecture">
               <td><span class="agenda-duration">20 min</span></td>
               <td><span class="agenda-clock">10:30-10:50</span></td>
               <td><span class="agenda-tag lecture">Lecture</span></td>
+              <td><a class="agenda-speaker" href="https://www.linkedin.com/in/caroline-essert-63890365/" target="_blank" rel="noopener noreferrer">Caroline Essert</a></td>
               <td><p class="agenda-topic">NCA for simulation</p></td>
             </tr>
             <tr class="lecture">
               <td><span class="agenda-duration">10 min</span></td>
               <td><span class="agenda-clock">10:50-11:00</span></td>
               <td><span class="agenda-tag lecture">Lecture</span></td>
+              <td><a class="agenda-speaker" href="https://www.linkedin.com/in/jonasmehtali/" target="_blank" rel="noopener noreferrer">Jonas Mehtali</a></td>
               <td><p class="agenda-topic">Tips for training and technical details</p></td>
             </tr>
             <tr class="handson">
               <td><span class="agenda-duration">30 min</span></td>
               <td><span class="agenda-clock">11:00-11:30</span></td>
               <td><span class="agenda-tag handson">Hands-on</span></td>
+              <td><a class="agenda-speaker" href="https://www.linkedin.com/in/jonasmehtali/" target="_blank" rel="noopener noreferrer">Jonas Mehtali</a></td>
               <td><p class="agenda-topic">Extend to detection</p></td>
             </tr>
             <tr class="lecture">
               <td><span class="agenda-duration">15 min</span></td>
               <td><span class="agenda-clock">11:30-11:45</span></td>
               <td><span class="agenda-tag lecture">Lecture</span></td>
+              <td><a class="agenda-speaker" href="https://www.linkedin.com/in/ario-sadafi/" target="_blank" rel="noopener noreferrer">Ario Sadafi</a></td>
               <td><p class="agenda-topic">Interpretability and outlook</p></td>
             </tr>
             <tr class="discussion">
               <td><span class="agenda-duration">15 min</span></td>
               <td><span class="agenda-clock">11:45-12:00</span></td>
               <td><span class="agenda-tag discussion">Discussion</span></td>
+              <td><span class="agenda-speaker">All</span></td>
               <td><p class="agenda-topic">Final Q&amp;A</p></td>
             </tr>
           </tbody>
